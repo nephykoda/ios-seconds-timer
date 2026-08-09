@@ -1,0 +1,158 @@
+# iOS Seconds Timer — Design
+
+**Date:** 2026-08-10
+**Status:** Approved
+
+## Purpose
+
+A single-page web app, used from Safari on iPhone, that counts down a duration
+and displays it as **raw seconds only**. `100` counts `100, 99, 98 … 0`. It
+never converts to minutes and never shows a colon.
+
+This is the one difference from Apple's Clock timer, which caps seconds at 59
+and rolls the remainder into minutes. Everything else — layout, typography,
+colors, ring, button treatment — copies the iOS dark timer exactly.
+
+## Scope
+
+- One timer. No multiple concurrent timers, no history, no presets, no labels.
+- No sound. No vibration. No notifications.
+- No persistence across page reloads.
+- No build step, no dependencies, no framework.
+
+## Input
+
+Two ways to set the duration, sharing the idle screen.
+
+**Wheel (default).** A vertical scroll column covering **1–600 seconds**,
+using CSS `scroll-snap-type: y mandatory` so it gets native iOS momentum and
+snap-to-value with no JS animation. Hairline separators above and below the
+centre row; a static "seconds" label to the right of the column.
+
+**Keypad.** Tapping the big number focuses a hidden `<input>`, which summons
+Safari's native numeric keyboard. Typed digits appear live in the big number.
+While the keypad is up, the wheel is replaced by equivalent empty space so the
+layout does not shift. Dismissing the keyboard, or pressing Start, commits the
+value.
+
+**Sync.** The wheel and the typed value always agree — whichever was touched
+last wins, and committing a typed value scrolls the wheel to match (values
+above 600 leave the wheel parked at its maximum).
+
+**Cap.** Input is capped at 4 digits, max `9999` seconds (≈ 2h 46m). This keeps
+the number at a single fixed font size that always fits the screen. `0` or an
+empty value leaves Start inert.
+
+## Screens
+
+One screen, four states. Nothing navigates.
+
+### Idle
+Big white `0` (tappable → keypad). Seconds wheel below it. Buttons:
+**Cancel** (grey, inert until a value is set) and **Start** (orange).
+
+### Running
+Wheel is hidden. The big number counts down in raw seconds. An orange ring
+around the number depletes counterclockwise from 12 o'clock. Beneath the
+number, a `🔔 3:45 PM` label in secondary grey showing the wall-clock finish
+time. Buttons: **Cancel** (grey) / **Pause** (orange).
+
+### Paused
+Everything freezes exactly as rendered, ring included.
+Buttons: **Cancel** / **Resume** (orange).
+
+### Done
+The number sits at `0`. The ring is fully empty. Silent — no sound, no flash,
+no animation. Buttons: **Cancel** (grey → returns to idle) / **Restart**
+(orange → runs the same duration again).
+
+## Visual specification
+
+Fidelity to iOS is the point of the project, so these values are requirements,
+not suggestions.
+
+| Element | Value |
+|---|---|
+| Background | `#000000`, true black |
+| Number font | `-apple-system` (SF Pro on iOS), weight `200`, ~`22vw`, white, `font-variant-numeric: tabular-nums` |
+| Orange | `#FF9F0A` — systemOrange **dark** variant, not the `#FF9500` light-mode one |
+| Ring track | `#333333`, stroke ≈ 7px, round line caps |
+| Ring progress | `#FF9F0A`, same stroke |
+| Bell label | `#8E8E93`, ~17px |
+| Buttons | 80px circles. Cancel: `#333333` fill, white label. Start / Pause / Resume / Restart: orange at ~18% alpha fill, `#FF9F0A` label. |
+| Pressed state | Opacity ~0.4 on `:active` |
+| Page chrome | `viewport-fit=cover` with safe-area insets, `user-select: none`, no tap highlight, `overscroll-behavior: none` |
+
+`tabular-nums` matters: without it the number jitters horizontally as digits
+change.
+
+## Architecture
+
+`~/Developer/ios-seconds-timer/`, three files, no build:
+
+- `index.html` — number, ring SVG, wheel, hidden input, button row
+- `styles.css` — the visual specification above
+- `app.js` — state machine and timer engine
+
+### Timer engine
+
+Do not decrement a counter on an interval — Safari throttles background tabs
+and the count would drift.
+
+Store `endTimestamp = Date.now() + durationMs`. Tick on `requestAnimationFrame`
+and derive `remaining = endTimestamp - Date.now()` fresh each frame. Display
+`Math.ceil(remaining / 1000)`.
+
+Pausing stores the leftover milliseconds; resuming computes a fresh
+`endTimestamp` from it. Because remaining time is always derived from the
+clock, locking the phone mid-count and returning shows the correct remaining
+time rather than a stale one.
+
+### Ring
+
+A single SVG circle with `stroke-dasharray` set to its circumference, animating
+`stroke-dashoffset` from the fractional progress. Rotated `-90deg` and mirrored
+so it drains counterclockwise from 12 o'clock. Driven by the same rAF tick, so
+it moves smoothly rather than stepping once per second.
+
+### State machine
+
+A single `state` variable (`idle | running | paused | done`) and one `render()`
+that writes it to a `data-state` attribute on `<body>`. All visibility and
+button labelling is expressed as CSS selectors on that attribute, so there is
+no imperative DOM toggling spread through the code.
+
+### Wake lock
+
+Request `navigator.wakeLock` on Start so the screen does not sleep mid-count;
+release it on Cancel and on Done. Supported in iOS Safari 16.4+ and wrapped in
+`try`/`catch`, so older versions simply run without it.
+
+## Edge cases
+
+- Empty or `0` input: Start stays inert.
+- Input longer than 4 digits: extra digits are rejected.
+- Typed value above 600: accepted; wheel parks at its maximum.
+- Remaining exactly 0: ring renders empty, never a full circle.
+- Backgrounding or locking the device mid-count: remaining time stays correct
+  on return.
+- Reload mid-count: timer is lost, returns to idle. Accepted.
+
+## Testing
+
+No test framework — the page is a single dependency-free document. Verification
+is manual, on a real iPhone in Safari:
+
+1. Idle → wheel scrolls, snaps, and updates the big number.
+2. Tap the number → numeric keyboard appears, digits render live, 4-digit cap
+   holds, layout does not shift.
+3. Typed value and wheel value stay in sync in both directions.
+4. Start → counts in raw seconds, ring depletes smoothly, bell label shows the
+   correct finish time.
+5. Values above 59 display as raw seconds (`100`, not `1:40`) throughout.
+6. Pause freezes number and ring; Resume continues from the same point.
+7. Lock the phone for ~30s mid-count, unlock: remaining time is correct.
+8. Done → number at `0`, ring empty, silent; Restart reruns the same duration;
+   Cancel returns to idle.
+9. Rendering check against a real iOS timer screenshot: colors, weights, and
+   button sizing match.
