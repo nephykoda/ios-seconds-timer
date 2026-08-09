@@ -90,9 +90,9 @@ not suggestions.
 | Orange | `#FF9F0A` — systemOrange **dark** variant, not the `#FF9500` light-mode one |
 | Green | `#30D158` — systemGreen dark variant |
 | Wheel row height | `34px`, 5 rows visible (`170px`). **Must stay in sync with `ROW` in app.js** — the scroll-to-value maths depends on it. |
-| Wheel selected row | `#2C2C2E` pill, 10px radius, text `rgba(255,255,255,0.8)` — off-white, so it does not out-shout the countdown number |
-| Wheel other rows | `#8E8E93`, 22px regular |
-| `sec` label | 17px **semibold**, white |
+| Wheel selected row | `#151517` pill, 10px radius, value text `#CECDCF` |
+| Wheel other rows | `#5C5C5C`, 22px regular |
+| `sec` label | 17px **semibold**, `#F9F9F9` |
 | Ring track | `#333333`, stroke ≈ 7px, round line caps |
 | Ring progress | `#FF9F0A`, same stroke |
 | Bell + `m:ss` sub-label | `#5A5A5E`, 16px, `tabular-nums`, sits **above** the number |
@@ -166,6 +166,40 @@ drifts the ring down 15px unless the padding drops by 30px too. All three are
 tuned together to hold the ring ~90px clear of the nav bar. Change one,
 re-check the others.
 
+### Wheel drum (3D)
+
+The wheel is projected onto a cylinder, like a real `UIPickerView`: rows away
+from the centre foreshorten and bunch together, so more values fit in the same
+height and the picker reads as a drum rather than a flat list.
+
+The rows stay in **normal document flow** with `scroll-snap`, so iOS keeps
+supplying native momentum, rubber-banding and snap — none of that is
+reimplemented. On each scroll frame `renderDrum()` computes, for every row
+within 7 of the centre, how many rows from centre it sits (`rows`), then writes
+a transform moving it from its flat position to where the cylinder would put
+it:
+
+```
+theta = rows × 20°
+dy    = RADIUS × sin(theta) − rows × ROW     // cylinder position − flow position
+transform: translateY(dy) rotateX(−theta)
+```
+
+`RADIUS = ROW / STEP_RAD` makes spacing at the centre match the flat row
+height, so the selected row lands exactly in the highlight pill. Rows at or
+past 90° are collapsed with `scaleY(0)` rather than being drawn inside-out.
+
+Mechanics that matter:
+- Perspective lives on `.wheel-scroll` (`900px`, origin `50% 50%`) so the
+  vanishing point sits at the centre of the visible window, not the middle of
+  the 101-row list. `.wheel-items` needs `transform-style: preserve-3d` for the
+  rows to inherit that 3D space.
+- Transforms are applied on `requestAnimationFrame`, once per frame however
+  many scroll events fire.
+- Only ~15 rows carry a transform at a time; the previous set is cleared each
+  pass, so off-screen rows hold no stale state.
+- Transforms never affect layout, so this does not disturb the no-shift rule.
+
 ### State machine
 
 A single `state` variable (`idle | running | paused | done`) and one `render()`
@@ -200,6 +234,8 @@ is manual, on a real iPhone in Safari:
 10. Nav title reads `100 secs` in every state.
 11. **No element moves when Start is pressed.** Compare the number's and the
     dial's bounding boxes before and after; they must be identical.
+12. Wheel rows foreshorten toward the edges, and the drum stays smooth under a
+    fast flick on a real device.
 5. Values above 59 display as raw seconds (`100`, not `1:40`) throughout.
 6. Pause freezes number and ring; Resume continues from the same point.
 7. Lock the phone for ~30s mid-count, unlock: remaining time is correct.

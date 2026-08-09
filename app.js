@@ -7,6 +7,16 @@
   // arc always means the same number of seconds whatever you picked.
   var RING_FULL_MS = 100 * 1000;
   var ROW = 34;           // must match --row-h in styles.css
+  var WHEEL_H = 170;      // must match --wheel-h in styles.css
+  var PAD = (WHEEL_H - ROW) / 2;
+
+  // Drum geometry. Each row sits STEP_DEG further around a cylinder, so rows
+  // away from centre foreshorten and bunch up exactly as they do on iOS. The
+  // radius is chosen so spacing at the centre matches the flat row height.
+  var STEP_DEG = 20;
+  var STEP_RAD = STEP_DEG * Math.PI / 180;
+  var RADIUS = ROW / STEP_RAD;
+  var DRUM_WINDOW = 7;    // rows either side of centre worth transforming
   var CIRC = 2 * Math.PI * 140;
 
   var els = {
@@ -29,6 +39,8 @@
   var wakeLock = null;
   var pendingScrollTop = null; // scrollTop we set ourselves, to be ignored once
   var selectedEl = null;       // currently highlighted wheel row
+  var drumStyled = [];         // rows currently carrying a 3D transform
+  var drumFrame = null;        // rAF handle, so we transform once per frame
 
   /* ---------- wheel ---------- */
 
@@ -39,6 +51,39 @@
     }
     els.wheelItems.innerHTML = html;
   })();
+
+  // Project the rows onto a cylinder. Rows stay in normal flow — so iOS keeps
+  // supplying momentum and snap — and each is nudged from its linear position
+  // to where the drum would put it, then rotated to match.
+  function renderDrum() {
+    var items = els.wheelItems.children;
+    var centreY = els.wheelScroll.scrollTop + WHEEL_H / 2;
+
+    for (var k = 0; k < drumStyled.length; k++) drumStyled[k].style.transform = '';
+    drumStyled.length = 0;
+
+    var mid = Math.round((centreY - PAD - ROW / 2) / ROW);
+    var from = Math.max(0, mid - DRUM_WINDOW);
+    var to = Math.min(items.length - 1, mid + DRUM_WINDOW);
+
+    for (var i = from; i <= to; i++) {
+      var el = items[i];
+      var rows = (PAD + i * ROW + ROW / 2 - centreY) / ROW; // distance in rows
+      var theta = rows * STEP_RAD;
+
+      if (Math.abs(theta) >= Math.PI / 2) {   // past the horizon of the drum
+        el.style.transform = 'scaleY(0)';
+        drumStyled.push(el);
+        continue;
+      }
+
+      // where the cylinder puts it, minus where flow already put it
+      var dy = RADIUS * Math.sin(theta) - rows * ROW;
+      el.style.transform =
+        'translateY(' + dy.toFixed(2) + 'px) rotateX(' + (-theta * 180 / Math.PI).toFixed(2) + 'deg)';
+      drumStyled.push(el);
+    }
+  }
 
   // only the row sitting in the highlight pill is white; the rest stay grey
   function markSelected(idx) {
@@ -58,7 +103,16 @@
     els.wheelScroll.scrollTop = target;
   }
 
+  function scheduleDrum() {
+    if (drumFrame !== null) return;
+    drumFrame = requestAnimationFrame(function () {
+      drumFrame = null;
+      renderDrum();
+    });
+  }
+
   els.wheelScroll.addEventListener('scroll', function () {
+    scheduleDrum();
     if (state !== 'idle') return;
     if (pendingScrollTop !== null) {
       // swallow only the echo of our own programmatic scroll
@@ -236,5 +290,6 @@
   }
 
   scrollWheelTo(0);
+  renderDrum();
   render();
 })();

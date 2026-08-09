@@ -2,7 +2,9 @@
   --orange: #FF9F0A;
   --green: #30D158;
   --grey-fill: #333333;
-  --row-highlight: #2C2C2E;
+  --row-highlight: #151517;
+  --wheel-value: #CECDCF;
+  --wheel-dim: #5C5C5C;
   --secondary: #8E8E93;
   --faint: #5A5A5E;   /* deliberately low contrast: informative, not distracting */
   --row-h: 34px;    /* keep in sync with ROW in app.js */
@@ -188,6 +190,10 @@ body[data-state="done"] .wheel { visibility: hidden; }
   position: relative;
   z-index: 1;
   height: 100%;
+  /* vanishing point at the centre of the visible window, so rows curve away
+     from the selected row exactly as they do on a UIPickerView drum */
+  perspective: 900px;
+  perspective-origin: 50% 50%;
   overflow-y: scroll;
   scroll-snap-type: y mandatory;
   -webkit-overflow-scrolling: touch;
@@ -199,6 +205,9 @@ body[data-state="done"] .wheel { visibility: hidden; }
 }
 
 .wheel-scroll::-webkit-scrollbar { display: none; }
+
+/* rows are transformed individually, so they must share the scroller's 3D space */
+.wheel-items { transform-style: preserve-3d; }
 
 .wheel-pad { height: calc((var(--wheel-h) - var(--row-h)) / 2); }
 
@@ -212,13 +221,14 @@ body[data-state="done"] .wheel { visibility: hidden; }
   font-variant-numeric: tabular-nums;
   /* nudged left so numbers sit beside the "sec" label, as on iOS */
   padding-right: 4em;
-  color: var(--secondary);
+  color: var(--wheel-dim);
   transition: color .15s ease;
+  /* the 3D projection is written here by app.js on every scroll frame */
+  transform-origin: 50% 50%;
+  backface-visibility: hidden;
 }
 
-/* off-white rather than pure white — the value should not out-shout the
-   countdown number above it */
-.wheel-item.is-selected { color: rgba(255, 255, 255, 0.8); }
+.wheel-item.is-selected { color: var(--wheel-value); }
 
 /* the rounded grey pill behind the selected row, as in the iOS picker */
 .wheel-highlight {
@@ -241,7 +251,7 @@ body[data-state="done"] .wheel { visibility: hidden; }
   margin-left: 0.6em;
   font-size: 17px;
   font-weight: 600;
-  color: #fff;
+  color: #F9F9F9;
   pointer-events: none;
   z-index: 2;
 }
