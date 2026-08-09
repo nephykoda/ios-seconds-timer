@@ -1,4 +1,4 @@
-# iOS Seconds Timer — Design
+# iOS 99-Second Timer — Design
 
 **Date:** 2026-08-10
 **Status:** Approved
@@ -6,7 +6,7 @@
 ## Purpose
 
 A single-page web app, used from Safari on iPhone, that counts down a duration
-and displays it as **raw seconds only**. `100` counts `100, 99, 98 … 0`. It
+and displays it as **raw seconds only**. `99` counts `99, 98, 97 … 0`. It
 never converts to minutes and never shows a colon.
 
 This is the one difference from Apple's Clock timer, which caps seconds at 59
@@ -24,15 +24,17 @@ colors, ring, button treatment — copies the iOS dark timer exactly.
 
 The scroll wheel is the only way to set the duration.
 
-A vertical scroll column covering **0–100 seconds**, using CSS
+A vertical scroll column covering **0–99 seconds**, using CSS
 `scroll-snap-type: y mandatory` so it gets native iOS momentum and
 snap-to-value with no JS animation. The row in the centre sits on a rounded
 grey pill and is rendered white; every other row is secondary grey. A static
 `sec` label sits to the right of the column.
 
-**Cap.** 100 seconds. This is a 100-second timer by definition — the wheel's
-range, the ring's scale, and the product's purpose all agree on that number.
-`0` leaves Start inert.
+**Cap.** 99 seconds. This is a 99-second timer by definition — the wheel's
+range, the ring's scale, the title and the product's purpose all agree on that
+number. `0` leaves Start inert, and `100` is not reachable.
+
+99 also means the display never exceeds two digits.
 
 A numeric keypad was specified and built, then removed on request. With a
 100-row wheel, scrolling to any value is quick enough that typing is not
@@ -45,9 +47,9 @@ One screen, four states. Nothing navigates.
 ### Nav bar
 Persistent across all states, copying the iOS Clock header: a decorative
 `‹ Timers` back button in orange on the left (non-interactive — there is
-nowhere to go back to) and a centred semibold title reading **`100 secs`**,
+nowhere to go back to) and a centred semibold title reading **`99s`**,
 permanently. The title names the app, not the current selection — this is the
-100-second timer whatever value is dialled in — so it is static markup with no
+99-second timer whatever value is dialled in — so it is static markup with no
 JS behind it. The bar carries generous top padding (18px above the safe-area
 inset) so the title clears the notch comfortably.
 
@@ -59,7 +61,7 @@ a value is set) and **Start** (green).
 Wheel is hidden. The big number counts down in raw seconds. An orange ring
 around the number is anchored at 12 o'clock and runs clockwise, so its leading
 edge retreats **anticlockwise** as time runs out. **Above** the number, a bell
-icon and the same remaining time rendered as `m:ss` — so `100` reads `1:40`.
+icon and the same remaining time rendered as `m:ss` — so `99` reads `1:39`.
 It ticks with the main count and is deliberately low contrast (`#5A5A5E`) so it
 informs without competing with the raw seconds.
 Buttons: **Cancel** (grey) / **Pause** (orange).
@@ -128,9 +130,9 @@ time rather than a stale one.
 
 ### Ring
 
-**The ring is an absolute 0–100 second gauge, not a progress bar.** Its fill is
-`remaining / 100s`, never `remaining / chosenDuration`. A 100s timer therefore
-starts on a full circle; a 30s timer starts 30% filled and drains from there;
+**The ring is an absolute 0–99 second gauge, not a progress bar.** Its fill is
+`remaining / 99s`, never `remaining / chosenDuration`. A 99s timer therefore
+starts on a full circle; a 30s timer starts about a third filled and drains;
 a 5s timer starts as a short stub near 12 o'clock. The arc always denotes the
 same number of seconds regardless of what was selected, so the ring is directly
 readable across runs.
@@ -249,19 +251,22 @@ No test framework — the page is a single dependency-free document. Verificatio
 is manual, on a real iPhone in Safari:
 
 1. Idle → wheel scrolls, snaps, and updates the big number.
-2. Exactly one row is white and sitting on the grey pill at all times.
-3. Start button is green; Pause is orange; Resume and Restart are green.
-4. Start → counts in raw seconds, the ring's leading edge retreats
+2. Exactly one row carries the selected styling and sits in the pill at all
+   times.
+3. Wheel stops at `99`; `100` is not reachable.
+4. Start button is green; Pause is orange; Resume and Restart are green.
+5. Start → counts in raw seconds, the ring's leading edge retreats
    anticlockwise, and the `m:ss` sub-label above tracks the main count.
-10. Nav title reads `100 secs` in every state.
-11. **No element moves when Start is pressed.** Compare the number's and the
+6. Values above 59 display as raw seconds (`99`, not `1:39`) throughout.
+7. A 99s run starts on a full ring; a 30s run starts about a third filled.
+8. Pause freezes number and ring; Resume continues from the same point.
+9. Lock the phone for ~30s mid-count, unlock: remaining time is correct.
+10. Done → number at `0`, ring empty, silent; Restart reruns the same duration;
+    Cancel returns to idle.
+11. Nav title reads `99s` in every state.
+12. **No element moves when Start is pressed.** Compare the number's and the
     dial's bounding boxes before and after; they must be identical.
-12. Wheel rows foreshorten toward the edges, and the drum stays smooth under a
+13. Wheel rows foreshorten toward the edges, and the drum stays smooth under a
     fast flick on a real device.
-5. Values above 59 display as raw seconds (`100`, not `1:40`) throughout.
-6. Pause freezes number and ring; Resume continues from the same point.
-7. Lock the phone for ~30s mid-count, unlock: remaining time is correct.
-8. Done → number at `0`, ring empty, silent; Restart reruns the same duration;
-   Cancel returns to idle.
-9. Rendering check against a real iOS timer screenshot: colors, weights, and
-   button sizing match.
+14. Rendering check against a real iOS timer screenshot: colours, weights, and
+    button sizing match.

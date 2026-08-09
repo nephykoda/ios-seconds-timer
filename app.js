@@ -1,11 +1,12 @@
 (function () {
   'use strict';
 
-  var WHEEL_MAX = 100;    // the wheel is the only input, so this is the ceiling
-  // The ring is an absolute 0-100s gauge, not a percentage of the chosen
-  // duration: a 30s timer starts the ring 30% full and drains to empty, so the
-  // arc always means the same number of seconds whatever you picked.
-  var RING_FULL_MS = 100 * 1000;
+  var WHEEL_MAX = 99;     // the wheel is the only input, so this is the ceiling
+  // The ring is an absolute 0-99s gauge, not a percentage of the chosen
+  // duration: a 30s timer starts the ring 30/99 full and drains to empty, so
+  // the arc always means the same number of seconds whatever you picked. 99s
+  // fills the circle completely.
+  var RING_FULL_MS = WHEEL_MAX * 1000;
   var ROW = 34;           // must match --row-h in styles.css
   var WHEEL_H = 170;      // must match --wheel-h in styles.css
   var PAD = (WHEEL_H - ROW) / 2;
@@ -169,7 +170,7 @@
      Centring the number's box is not the same as centring what you see. The
      negative letter-spacing is applied after the final digit too, so the box
      is narrower than the ink; and in tabular figures a "1" sits in a
-     full-width cell with a wide left sidebearing. "100" ends up ~6px right of
+     full-width cell with a wide left sidebearing, so "1x" values drift right of
      centre. Measure the real ink bounds and offset the element to compensate. */
 
   var inkCtx = null;
