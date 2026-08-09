@@ -95,6 +95,7 @@ not suggestions.
 | Bell + `m:ss` sub-label | `#5A5A5E`, 16px, `tabular-nums`, sits **above** the number |
 | Buttons | 80px circles. Cancel: `#333333` fill, white label. Start / Resume / Restart: green at ~18% alpha fill, green label. Pause: orange at ~18% alpha, orange label. |
 | Pressed state | Opacity ~0.4 on `:active` |
+| Vertical rhythm | Stage gap `0` — the wheel's edge fade means neighbours can sit nearly flush. Buttons 8px under the wheel. Stage padded `60px` below the safe-area inset so the ring clears the nav bar by ~80px. |
 | Page chrome | `viewport-fit=cover` with safe-area insets, `user-select: none`, no tap highlight, `overscroll-behavior: none` |
 
 `tabular-nums` matters: without it the number jitters horizontally as digits
@@ -137,6 +138,14 @@ mirroring — so the arc is anchored at 12 o'clock running clockwise and its
 leading edge retreats anticlockwise down the left side as time elapses. Driven
 by the same rAF tick, so it moves smoothly rather than stepping once per
 second.
+
+### Dial sizing
+
+The dial is sized by the readout (sub-label + number), **not** by the ring. The
+ring is an absolutely-positioned overlay centred on the dial, so while idle —
+when it is invisible — it reserves no vertical space and the number can sit
+close to the wheel. Once running, the ring overflows the dial box symmetrically
+into the space the hidden wheel still occupies.
 
 ### State machine
 
