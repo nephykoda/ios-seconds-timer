@@ -8,7 +8,8 @@
   var els = {
     body: document.body,
     number: document.getElementById('number'),
-    subtime: document.getElementById('subtime'),
+    subtime: document.getElementById('subtimeText'),
+    navTitle: document.getElementById('navTitle'),
     wheelScroll: document.getElementById('wheelScroll'),
     wheelItems: document.getElementById('wheelItems'),
     progress: document.querySelector('.ring-progress'),
@@ -107,7 +108,12 @@
     els.progress.style.strokeDashoffset = CIRC * (1 - frac);
   }
 
-  // seconds -> m:ss, the conventional reading of the raw count above it
+  // nav-bar title: names the timer by its duration, e.g. "100 secs"
+  function titleFor(secs) {
+    return secs + (secs === 1 ? ' sec' : ' secs');
+  }
+
+  // seconds -> m:ss, the conventional reading of the raw count
   function formatMinSec(secs) {
     var m = Math.floor(secs / 60);
     var s = secs % 60;
@@ -205,6 +211,8 @@
 
   function render() {
     els.body.setAttribute('data-state', state);
+
+    els.navTitle.textContent = titleFor(state === 'idle' ? value : totalMs / 1000);
 
     if (state === 'idle') {
       els.number.textContent = String(value);

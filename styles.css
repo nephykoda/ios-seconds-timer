@@ -4,6 +4,7 @@
   --grey-fill: #333333;
   --row-highlight: #2C2C2E;
   --secondary: #8E8E93;
+  --faint: #5A5A5E;   /* deliberately low contrast: informative, not distracting */
   --row-h: 40px;
   --wheel-h: 200px;
   --dial: min(78vw, 340px);
@@ -18,7 +19,10 @@ html, body {
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display",
+               "Helvetica Neue", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   color: #fff;
   -webkit-user-select: none;
   user-select: none;
@@ -26,6 +30,45 @@ body {
   -webkit-text-size-adjust: 100%;
   overflow: hidden;
 }
+
+/* ---------- nav bar ---------- */
+
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: calc(44px + env(safe-area-inset-top));
+  padding: env(safe-area-inset-top) 8px 0;
+  display: flex;
+  align-items: center;
+  z-index: 10;
+  pointer-events: none; /* the back button is decorative */
+}
+
+.nav-back {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--orange);
+  font-size: 17px;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+
+.nav-back svg { width: 11px; height: 18px; }
+
+.nav-title {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 17px;
+  font-weight: 600;   /* iOS nav titles are semibold */
+  letter-spacing: -0.02em;
+  color: #fff;
+}
+
+/* ---------- stage ---------- */
 
 .stage {
   height: 100%;
@@ -70,9 +113,9 @@ body[data-state="done"] .ring { opacity: 1; }
 
 .ring-progress {
   stroke: var(--orange);
-  /* order matters: mirror after rotating, so the arc starts at 12 o'clock
-     and drains counterclockwise */
-  transform: scaleX(-1) rotate(-90deg);
+  /* anchored at 12 o'clock running clockwise, so the leading edge retreats
+     anticlockwise as time runs out — the way the iOS timer drains */
+  transform: rotate(-90deg);
   transform-origin: 50% 50%;
 }
 
@@ -87,24 +130,30 @@ body[data-state="done"] .ring { opacity: 1; }
 }
 
 .number {
-  font-size: min(22vw, 116px);
-  font-weight: 200;
+  font-size: min(25vw, 132px);
+  font-weight: 100;   /* SF Pro Ultralight, as in the iOS timer */
   line-height: 1;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.03em;
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum";
   color: #fff;
 }
 
 .subtime {
-  color: var(--secondary);
-  font-size: 17px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 2px;
+  color: var(--faint);
+  font-size: 16px;
   font-weight: 400;
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum";
   opacity: 0;
   transition: opacity .2s ease;
 }
+
+.subtime svg { width: 14px; height: 14px; fill: var(--faint); }
 
 body[data-state="running"] .subtime,
 body[data-state="paused"] .subtime,

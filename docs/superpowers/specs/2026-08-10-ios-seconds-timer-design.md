@@ -41,20 +41,28 @@ display itself handles up to 4 digits without resizing.
 
 One screen, four states. Nothing navigates.
 
+### Nav bar
+Persistent across all states, copying the iOS Clock header: a decorative
+`‹ Timers` back button in orange on the left (non-interactive — there is
+nowhere to go back to) and a centred semibold title naming the timer by its
+duration, e.g. `100 secs`. The title tracks the wheel while idle and holds the
+running duration once started.
+
 ### Idle
 Big white `0` above the seconds wheel. Buttons: **Cancel** (grey, inert until
 a value is set) and **Start** (green).
 
 ### Running
 Wheel is hidden. The big number counts down in raw seconds. An orange ring
-around the number depletes counterclockwise from 12 o'clock. Beneath the
-number, the same remaining time rendered as `m:ss` in secondary grey — so
-`100` above reads `1:40` below. It ticks with the main count.
+around the number is anchored at 12 o'clock and runs clockwise, so its leading
+edge retreats **anticlockwise** as time runs out. **Above** the number, a bell
+icon and the same remaining time rendered as `m:ss` — so `100` reads `1:40`.
+It ticks with the main count and is deliberately low contrast (`#5A5A5E`) so it
+informs without competing with the raw seconds.
 Buttons: **Cancel** (grey) / **Pause** (orange).
 
-This replaces the iOS bell-and-finish-time label, which carries little meaning
-over a short count. The raw seconds stay the primary readout; the `m:ss` line
-is only a conventional reading of the same number.
+The `m:ss` reading takes the place of the iOS finish-clock-time, which carries
+little meaning over a short count. The bell icon is kept for fidelity.
 
 ### Paused
 Everything freezes exactly as rendered, ring included.
@@ -73,14 +81,16 @@ not suggestions.
 | Element | Value |
 |---|---|
 | Background | `#000000`, true black |
-| Number font | `-apple-system` (SF Pro on iOS), weight `200`, ~`22vw`, white, `font-variant-numeric: tabular-nums` |
+| Number font | `-apple-system` (SF Pro on iOS), weight `100` (Ultralight), `min(25vw, 132px)`, `-0.03em` tracking, white, `font-variant-numeric: tabular-nums` |
+| Nav title | 17px, weight `600` (semibold), white |
+| Nav back | 17px regular, orange, with a 2.6px-stroke chevron |
 | Orange | `#FF9F0A` — systemOrange **dark** variant, not the `#FF9500` light-mode one |
 | Green | `#30D158` — systemGreen dark variant |
 | Wheel selected row | `#2C2C2E` pill, 10px radius, white text |
 | Wheel other rows | `#8E8E93` |
 | Ring track | `#333333`, stroke ≈ 7px, round line caps |
 | Ring progress | `#FF9F0A`, same stroke |
-| `m:ss` sub-label | `#8E8E93`, ~17px, `tabular-nums` |
+| Bell + `m:ss` sub-label | `#5A5A5E`, 16px, `tabular-nums`, sits **above** the number |
 | Buttons | 80px circles. Cancel: `#333333` fill, white label. Start / Resume / Restart: green at ~18% alpha fill, green label. Pause: orange at ~18% alpha, orange label. |
 | Pressed state | Opacity ~0.4 on `:active` |
 | Page chrome | `viewport-fit=cover` with safe-area insets, `user-select: none`, no tap highlight, `overscroll-behavior: none` |
@@ -113,9 +123,11 @@ time rather than a stale one.
 ### Ring
 
 A single SVG circle with `stroke-dasharray` set to its circumference, animating
-`stroke-dashoffset` from the fractional progress. Rotated `-90deg` and mirrored
-so it drains counterclockwise from 12 o'clock. Driven by the same rAF tick, so
-it moves smoothly rather than stepping once per second.
+`stroke-dashoffset` from the fractional progress. Rotated `-90deg` only — no
+mirroring — so the arc is anchored at 12 o'clock running clockwise and its
+leading edge retreats anticlockwise down the left side as time elapses. Driven
+by the same rAF tick, so it moves smoothly rather than stepping once per
+second.
 
 ### State machine
 
@@ -146,8 +158,9 @@ is manual, on a real iPhone in Safari:
 1. Idle → wheel scrolls, snaps, and updates the big number.
 2. Exactly one row is white and sitting on the grey pill at all times.
 3. Start button is green; Pause is orange; Resume and Restart are green.
-4. Start → counts in raw seconds, ring depletes smoothly, `m:ss` sub-label
-   tracks the main count.
+4. Start → counts in raw seconds, the ring's leading edge retreats
+   anticlockwise, and the `m:ss` sub-label above tracks the main count.
+   Nav title reads `N secs` (`1 sec` singular).
 5. Values above 59 display as raw seconds (`100`, not `1:40`) throughout.
 6. Pause freezes number and ring; Resume continues from the same point.
 7. Lock the phone for ~30s mid-count, unlock: remaining time is correct.
