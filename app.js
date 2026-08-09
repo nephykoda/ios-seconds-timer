@@ -1,8 +1,7 @@
 (function () {
   'use strict';
 
-  var MAX_INPUT = 9999;   // 4-digit cap
-  var WHEEL_MAX = 600;    // wheel covers 0-600; keypad handles anything above
+  var WHEEL_MAX = 600;    // the wheel is the only input, so this is the ceiling
   var ROW = 40;           // must match --row-h in styles.css
   var CIRC = 2 * Math.PI * 140;
 
@@ -10,7 +9,6 @@
     body: document.body,
     number: document.getElementById('number'),
     subtime: document.getElementById('subtime'),
-    ghost: document.getElementById('ghost'),
     wheelScroll: document.getElementById('wheelScroll'),
     wheelItems: document.getElementById('wheelItems'),
     progress: document.querySelector('.ring-progress'),
@@ -26,6 +24,7 @@
   var rafId = null;
   var wakeLock = null;
   var pendingScrollTop = null; // scrollTop we set ourselves, to be ignored once
+  var selectedEl = null;       // currently highlighted wheel row
 
   /* ---------- wheel ---------- */
 
@@ -37,8 +36,19 @@
     els.wheelItems.innerHTML = html;
   })();
 
+  // only the row sitting in the highlight pill is white; the rest stay grey
+  function markSelected(idx) {
+    var el = els.wheelItems.children[idx];
+    if (el === selectedEl) return;
+    if (selectedEl) selectedEl.classList.remove('is-selected');
+    if (el) el.classList.add('is-selected');
+    selectedEl = el || null;
+  }
+
   function scrollWheelTo(v) {
-    var target = Math.min(Math.max(v, 0), WHEEL_MAX) * ROW;
+    var clamped = Math.min(Math.max(v, 0), WHEEL_MAX);
+    markSelected(clamped);
+    var target = clamped * ROW;
     if (Math.abs(els.wheelScroll.scrollTop - target) < 1) return; // no event will fire
     pendingScrollTop = target;
     els.wheelScroll.scrollTop = target;
@@ -56,31 +66,12 @@
     }
     var idx = Math.round(els.wheelScroll.scrollTop / ROW);
     idx = Math.min(Math.max(idx, 0), WHEEL_MAX);
+    markSelected(idx);
     if (idx !== value) {
       value = idx;
       render();
     }
   }, { passive: true });
-
-  /* ---------- keypad ---------- */
-
-  els.ghost.addEventListener('focus', function () {
-    if (state !== 'idle') { els.ghost.blur(); return; }
-    els.body.setAttribute('data-keypad', 'on');
-    els.ghost.value = value ? String(value) : '';
-  });
-
-  els.ghost.addEventListener('input', function () {
-    var digits = els.ghost.value.replace(/\D/g, '').slice(0, 4);
-    els.ghost.value = digits;
-    value = Math.min(parseInt(digits, 10) || 0, MAX_INPUT);
-    render();
-  });
-
-  els.ghost.addEventListener('blur', function () {
-    els.body.removeAttribute('data-keypad');
-    scrollWheelTo(value);
-  });
 
   /* ---------- timer engine ---------- */
 
@@ -155,7 +146,6 @@
     totalMs = seconds * 1000;
     endTimestamp = now() + totalMs;
     state = 'running';
-    els.ghost.blur();
     requestWakeLock();
     render();
     paint(totalMs); // paint immediately so Restart never flashes the old 0
@@ -206,13 +196,21 @@
 
   /* ---------- render ---------- */
 
+  // green for every "go" action, orange only for Pause — as in the iOS timer
+  function setRight(label, tone) {
+    els.right.textContent = label;
+    els.right.classList.toggle('btn-green', tone === 'green');
+    els.right.classList.toggle('btn-orange', tone === 'orange');
+  }
+
   function render() {
     els.body.setAttribute('data-state', state);
 
     if (state === 'idle') {
       els.number.textContent = String(value);
+      els.subtime.textContent = formatMinSec(value);
       els.left.textContent = 'Cancel';
-      els.right.textContent = 'Start';
+      setRight('Start', 'green');
       els.left.classList.toggle('is-off', value === 0);
       els.right.classList.toggle('is-off', value === 0);
       return;
@@ -223,12 +221,12 @@
     els.right.classList.remove('is-off');
 
     if (state === 'running') {
-      els.right.textContent = 'Pause';
+      setRight('Pause', 'orange');
     } else if (state === 'paused') {
-      els.right.textContent = 'Resume';
+      setRight('Resume', 'green');
       paint(pausedMs);
     } else if (state === 'done') {
-      els.right.textContent = 'Restart';
+      setRight('Restart', 'green');
       paint(0);
     }
   }

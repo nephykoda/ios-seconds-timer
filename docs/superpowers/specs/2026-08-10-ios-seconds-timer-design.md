@@ -22,34 +22,28 @@ colors, ring, button treatment — copies the iOS dark timer exactly.
 
 ## Input
 
-Two ways to set the duration, sharing the idle screen.
+The scroll wheel is the only way to set the duration.
 
-**Wheel (default).** A vertical scroll column covering **1–600 seconds**,
-using CSS `scroll-snap-type: y mandatory` so it gets native iOS momentum and
-snap-to-value with no JS animation. Hairline separators above and below the
-centre row; a static "seconds" label to the right of the column.
+A vertical scroll column covering **0–600 seconds**, using CSS
+`scroll-snap-type: y mandatory` so it gets native iOS momentum and
+snap-to-value with no JS animation. The row in the centre sits on a rounded
+grey pill and is rendered white; every other row is secondary grey. A static
+`sec` label sits to the right of the column.
 
-**Keypad.** Tapping the big number focuses a hidden `<input>`, which summons
-Safari's native numeric keyboard. Typed digits appear live in the big number.
-While the keypad is up, the wheel is replaced by equivalent empty space so the
-layout does not shift. Dismissing the keyboard, or pressing Start, commits the
-value.
+**Cap.** 600 seconds (10 minutes) — the wheel's range is the ceiling. `0`
+leaves Start inert.
 
-**Sync.** The wheel and the typed value always agree — whichever was touched
-last wins, and committing a typed value scrolls the wheel to match (values
-above 600 leave the wheel parked at its maximum).
-
-**Cap.** Input is capped at 4 digits, max `9999` seconds (≈ 2h 46m). This keeps
-the number at a single fixed font size that always fits the screen. `0` or an
-empty value leaves Start inert.
+A numeric keypad was specified and built, then removed on request. If a value
+above 600 is ever needed, either extend the wheel or restore the keypad; the
+display itself handles up to 4 digits without resizing.
 
 ## Screens
 
 One screen, four states. Nothing navigates.
 
 ### Idle
-Big white `0` (tappable → keypad). Seconds wheel below it. Buttons:
-**Cancel** (grey, inert until a value is set) and **Start** (orange).
+Big white `0` above the seconds wheel. Buttons: **Cancel** (grey, inert until
+a value is set) and **Start** (green).
 
 ### Running
 Wheel is hidden. The big number counts down in raw seconds. An orange ring
@@ -64,12 +58,12 @@ is only a conventional reading of the same number.
 
 ### Paused
 Everything freezes exactly as rendered, ring included.
-Buttons: **Cancel** / **Resume** (orange).
+Buttons: **Cancel** / **Resume** (green).
 
 ### Done
 The number sits at `0`. The ring is fully empty. Silent — no sound, no flash,
 no animation. Buttons: **Cancel** (grey → returns to idle) / **Restart**
-(orange → runs the same duration again).
+(green → runs the same duration again).
 
 ## Visual specification
 
@@ -81,10 +75,13 @@ not suggestions.
 | Background | `#000000`, true black |
 | Number font | `-apple-system` (SF Pro on iOS), weight `200`, ~`22vw`, white, `font-variant-numeric: tabular-nums` |
 | Orange | `#FF9F0A` — systemOrange **dark** variant, not the `#FF9500` light-mode one |
+| Green | `#30D158` — systemGreen dark variant |
+| Wheel selected row | `#2C2C2E` pill, 10px radius, white text |
+| Wheel other rows | `#8E8E93` |
 | Ring track | `#333333`, stroke ≈ 7px, round line caps |
 | Ring progress | `#FF9F0A`, same stroke |
 | `m:ss` sub-label | `#8E8E93`, ~17px, `tabular-nums` |
-| Buttons | 80px circles. Cancel: `#333333` fill, white label. Start / Pause / Resume / Restart: orange at ~18% alpha fill, `#FF9F0A` label. |
+| Buttons | 80px circles. Cancel: `#333333` fill, white label. Start / Resume / Restart: green at ~18% alpha fill, green label. Pause: orange at ~18% alpha, orange label. |
 | Pressed state | Opacity ~0.4 on `:active` |
 | Page chrome | `viewport-fit=cover` with safe-area insets, `user-select: none`, no tap highlight, `overscroll-behavior: none` |
 
@@ -95,7 +92,7 @@ change.
 
 `~/Developer/ios-seconds-timer/`, three files, no build:
 
-- `index.html` — number, ring SVG, wheel, hidden input, button row
+- `index.html` — number, ring SVG, wheel, button row
 - `styles.css` — the visual specification above
 - `app.js` — state machine and timer engine
 
@@ -135,9 +132,7 @@ release it on Cancel and on Done. Supported in iOS Safari 16.4+ and wrapped in
 
 ## Edge cases
 
-- Empty or `0` input: Start stays inert.
-- Input longer than 4 digits: extra digits are rejected.
-- Typed value above 600: accepted; wheel parks at its maximum.
+- Wheel at `0`: Start stays inert.
 - Remaining exactly 0: ring renders empty, never a full circle.
 - Backgrounding or locking the device mid-count: remaining time stays correct
   on return.
@@ -149,9 +144,8 @@ No test framework — the page is a single dependency-free document. Verificatio
 is manual, on a real iPhone in Safari:
 
 1. Idle → wheel scrolls, snaps, and updates the big number.
-2. Tap the number → numeric keyboard appears, digits render live, 4-digit cap
-   holds, layout does not shift.
-3. Typed value and wheel value stay in sync in both directions.
+2. Exactly one row is white and sitting on the grey pill at all times.
+3. Start button is green; Pause is orange; Resume and Restart are green.
 4. Start → counts in raw seconds, ring depletes smoothly, `m:ss` sub-label
    tracks the main count.
 5. Values above 59 display as raw seconds (`100`, not `1:40`) throughout.

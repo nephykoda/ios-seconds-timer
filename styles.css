@@ -1,6 +1,8 @@
 :root {
   --orange: #FF9F0A;
+  --green: #30D158;
   --grey-fill: #333333;
+  --row-highlight: #2C2C2E;
   --secondary: #8E8E93;
   --row-h: 40px;
   --wheel-h: 200px;
@@ -108,24 +110,6 @@ body[data-state="running"] .subtime,
 body[data-state="paused"] .subtime,
 body[data-state="done"] .subtime { opacity: 1; }
 
-/* invisible input that summons the native numeric keyboard */
-.ghost-input {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  opacity: 0;
-  border: 0;
-  background: transparent;
-  font-size: 16px; /* < 16px makes Safari zoom on focus */
-  color: transparent;
-  caret-color: transparent;
-}
-
-body[data-state="running"] .ghost-input,
-body[data-state="paused"] .ghost-input,
-body[data-state="done"] .ghost-input { display: none; }
-
 /* ---------- wheel ---------- */
 
 .wheel {
@@ -137,10 +121,11 @@ body[data-state="done"] .ghost-input { display: none; }
 
 body[data-state="running"] .wheel,
 body[data-state="paused"] .wheel,
-body[data-state="done"] .wheel,
-body[data-keypad="on"] .wheel { visibility: hidden; }
+body[data-state="done"] .wheel { visibility: hidden; }
 
 .wheel-scroll {
+  position: relative;
+  z-index: 1;
   height: 100%;
   overflow-y: scroll;
   scroll-snap-type: y mandatory;
@@ -164,19 +149,25 @@ body[data-keypad="on"] .wheel { visibility: hidden; }
   font-size: 23px;
   font-weight: 400;
   font-variant-numeric: tabular-nums;
-  /* nudged left so numbers sit beside the "seconds" label, as on iOS */
-  padding-right: 5.5em;
+  /* nudged left so numbers sit beside the "sec" label, as on iOS */
+  padding-right: 4em;
+  color: var(--secondary);
+  transition: color .15s ease;
 }
 
-.wheel-rules {
+.wheel-item.is-selected { color: #fff; }
+
+/* the rounded grey pill behind the selected row, as in the iOS picker */
+.wheel-highlight {
   position: absolute;
   left: 0;
   right: 0;
   top: calc((var(--wheel-h) - var(--row-h)) / 2);
   height: var(--row-h);
-  border-top: 0.5px solid rgba(255, 255, 255, 0.18);
-  border-bottom: 0.5px solid rgba(255, 255, 255, 0.18);
+  background: var(--row-highlight);
+  border-radius: 10px;
   pointer-events: none;
+  z-index: 0;
 }
 
 .wheel-label {
@@ -184,10 +175,11 @@ body[data-keypad="on"] .wheel { visibility: hidden; }
   left: 50%;
   top: 50%;
   transform: translateY(-50%);
-  margin-left: 0.9em;
+  margin-left: 0.6em;
   font-size: 17px;
   color: #fff;
   pointer-events: none;
+  z-index: 2;
 }
 
 /* ---------- buttons ---------- */
@@ -217,6 +209,11 @@ body[data-keypad="on"] .wheel { visibility: hidden; }
 .btn-orange {
   background: rgba(255, 159, 10, 0.18);
   color: var(--orange);
+}
+
+.btn-green {
+  background: rgba(48, 209, 88, 0.18);
+  color: var(--green);
 }
 
 .btn.is-off { opacity: 0.32; pointer-events: none; }
