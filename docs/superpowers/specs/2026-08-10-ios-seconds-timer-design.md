@@ -89,14 +89,16 @@ not suggestions.
 | Nav back | 17px regular, orange, with a 2.6px-stroke chevron |
 | Orange | `#FF9F0A` — systemOrange **dark** variant, not the `#FF9500` light-mode one |
 | Green | `#30D158` — systemGreen dark variant |
-| Wheel selected row | `#2C2C2E` pill, 10px radius, white text |
-| Wheel other rows | `#8E8E93` |
+| Wheel row height | `34px`, 5 rows visible (`170px`). **Must stay in sync with `ROW` in app.js** — the scroll-to-value maths depends on it. |
+| Wheel selected row | `#2C2C2E` pill, 10px radius, text `rgba(255,255,255,0.8)` — off-white, so it does not out-shout the countdown number |
+| Wheel other rows | `#8E8E93`, 22px regular |
+| `sec` label | 17px **semibold**, white |
 | Ring track | `#333333`, stroke ≈ 7px, round line caps |
 | Ring progress | `#FF9F0A`, same stroke |
 | Bell + `m:ss` sub-label | `#5A5A5E`, 16px, `tabular-nums`, sits **above** the number |
 | Buttons | 80px circles. Cancel: `#333333` fill, white label. Start / Resume / Restart: green at ~18% alpha fill, green label. Pause: orange at ~18% alpha, orange label. |
 | Pressed state | Opacity ~0.4 on `:active` |
-| Vertical rhythm | Stage gap `0` — the wheel's edge fade means neighbours can sit nearly flush. Buttons 8px under the wheel. Stage padded `84px` below the safe-area inset. Dial fixed at `214px`, giving ~32px between number and wheel and ~90px between nav bar and ring. |
+| Vertical rhythm | Stage gap `0` — the wheel's edge fade means neighbours can sit nearly flush. Buttons 8px under the wheel. Stage padded `54px` below the safe-area inset. Dial fixed at `214px`, giving ~32px between number and wheel and ~90px between nav bar and ring. |
 | Page chrome | `viewport-fit=cover` with safe-area insets, `user-select: none`, no tap highlight, `overscroll-behavior: none` |
 
 `tabular-nums` matters: without it the number jitters horizontally as digits
@@ -159,8 +161,10 @@ layout.
 
 Dial height and stage top padding trade off directly: adding to the dial pushes
 the ring up toward the nav bar, adding to the padding pushes it back down by
-half as much. They are tuned together to hold the ring ~90px clear of the nav
-bar. Change one, re-check the other.
+half as much. Wheel height feeds in the same way: shortening the wheel by 30px
+drifts the ring down 15px unless the padding drops by 30px too. All three are
+tuned together to hold the ring ~90px clear of the nav bar. Change one,
+re-check the others.
 
 ### State machine
 

@@ -6,7 +6,7 @@
   // duration: a 30s timer starts the ring 30% full and drains to empty, so the
   // arc always means the same number of seconds whatever you picked.
   var RING_FULL_MS = 100 * 1000;
-  var ROW = 40;           // must match --row-h in styles.css
+  var ROW = 34;           // must match --row-h in styles.css
   var CIRC = 2 * Math.PI * 140;
 
   var els = {

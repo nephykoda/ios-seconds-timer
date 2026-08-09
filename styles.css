@@ -5,8 +5,8 @@
   --row-highlight: #2C2C2E;
   --secondary: #8E8E93;
   --faint: #5A5A5E;   /* deliberately low contrast: informative, not distracting */
-  --row-h: 40px;
-  --wheel-h: 200px;
+  --row-h: 34px;    /* keep in sync with ROW in app.js */
+  --wheel-h: 170px; /* 5 rows */
   --dial: min(78vw, 340px);
 }
 
@@ -81,7 +81,7 @@ body {
   gap: 0;
   /* clear the nav bar as well as the notch, so the ring is not crowded against
      the top of the screen */
-  padding: calc(env(safe-area-inset-top) + 84px) env(safe-area-inset-right)
+  padding: calc(env(safe-area-inset-top) + 54px) env(safe-area-inset-right)
            env(safe-area-inset-bottom) env(safe-area-inset-left);
 }
 
@@ -207,7 +207,7 @@ body[data-state="done"] .wheel { visibility: hidden; }
   line-height: var(--row-h);
   scroll-snap-align: center;
   text-align: center;
-  font-size: 23px;
+  font-size: 22px;
   font-weight: 400;
   font-variant-numeric: tabular-nums;
   /* nudged left so numbers sit beside the "sec" label, as on iOS */
@@ -216,7 +216,9 @@ body[data-state="done"] .wheel { visibility: hidden; }
   transition: color .15s ease;
 }
 
-.wheel-item.is-selected { color: #fff; }
+/* off-white rather than pure white — the value should not out-shout the
+   countdown number above it */
+.wheel-item.is-selected { color: rgba(255, 255, 255, 0.8); }
 
 /* the rounded grey pill behind the selected row, as in the iOS picker */
 .wheel-highlight {
@@ -238,6 +240,7 @@ body[data-state="done"] .wheel { visibility: hidden; }
   transform: translateY(-50%);
   margin-left: 0.6em;
   font-size: 17px;
+  font-weight: 600;
   color: #fff;
   pointer-events: none;
   z-index: 2;
