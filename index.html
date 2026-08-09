@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="theme-color" content="#000000">
+<title>Timer</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body data-state="idle">
+
+  <main class="stage">
+
+    <div class="dial">
+      <svg class="ring" viewBox="0 0 300 300" aria-hidden="true">
+        <circle class="ring-track" cx="150" cy="150" r="140"></circle>
+        <circle class="ring-progress" cx="150" cy="150" r="140"></circle>
+      </svg>
+
+      <div class="readout">
+        <div class="number" id="number">0</div>
+        <div class="bell" id="bell">
+          <svg viewBox="0 0 16 16" aria-hidden="true">
+            <path d="M8 14.6c-.85 0-1.55-.7-1.55-1.55h3.1c0 .85-.7 1.55-1.55 1.55z"></path>
+            <path d="M13.6 11.4c-.62-.62-1.02-1.42-1.02-2.42V7c0-2.2-1.48-4.02-3.45-4.45V2c0-.62-.5-1.12-1.13-1.12S6.88 1.38 6.88 2v.55C4.9 2.98 3.42 4.8 3.42 7v1.98c0 1-.4 1.8-1.02 2.42-.24.24-.07.62.26.62h10.68c.33 0 .5-.38.26-.62z"></path>
+          </svg>
+          <span id="endtime"></span>
+        </div>
+      </div>
+
+      <input class="ghost-input" id="ghost" type="text" inputmode="numeric" pattern="[0-9]*"
+             autocomplete="off" autocorrect="off" spellcheck="false" aria-label="Seconds">
+    </div>
+
+    <div class="wheel" id="wheel">
+      <div class="wheel-scroll" id="wheelScroll">
+        <div class="wheel-pad"></div>
+        <div class="wheel-items" id="wheelItems"></div>
+        <div class="wheel-pad"></div>
+      </div>
+      <div class="wheel-rules" aria-hidden="true"></div>
+      <div class="wheel-label" aria-hidden="true">seconds</div>
+    </div>
+
+    <div class="buttons">
+      <button class="btn btn-grey" id="leftBtn" type="button">Cancel</button>
+      <button class="btn btn-orange" id="rightBtn" type="button">Start</button>
+    </div>
+
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

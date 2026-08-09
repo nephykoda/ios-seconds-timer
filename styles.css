@@ -1,0 +1,224 @@
+:root {
+  --orange: #FF9F0A;
+  --grey-fill: #333333;
+  --secondary: #8E8E93;
+  --row-h: 40px;
+  --wheel-h: 200px;
+  --dial: min(78vw, 340px);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  height: 100%;
+  background: #000;
+  overscroll-behavior: none;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", sans-serif;
+  color: #fff;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-text-size-adjust: 100%;
+  overflow: hidden;
+}
+
+.stage {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6vh;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right)
+           env(safe-area-inset-bottom) env(safe-area-inset-left);
+}
+
+/* ---------- dial: ring + number + bell ---------- */
+
+.dial {
+  position: relative;
+  width: var(--dial);
+  height: var(--dial);
+  flex: none;
+}
+
+.ring {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: opacity .25s ease;
+}
+
+body[data-state="running"] .ring,
+body[data-state="paused"] .ring,
+body[data-state="done"] .ring { opacity: 1; }
+
+.ring circle {
+  fill: none;
+  stroke-width: 7;
+  stroke-linecap: round;
+}
+
+.ring-track { stroke: var(--grey-fill); }
+
+.ring-progress {
+  stroke: var(--orange);
+  /* order matters: mirror after rotating, so the arc starts at 12 o'clock
+     and drains counterclockwise */
+  transform: scaleX(-1) rotate(-90deg);
+  transform-origin: 50% 50%;
+}
+
+.readout {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.number {
+  font-size: min(22vw, 116px);
+  font-weight: 200;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+  color: #fff;
+}
+
+.bell {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--secondary);
+  font-size: 17px;
+  font-weight: 400;
+  opacity: 0;
+  transition: opacity .2s ease;
+}
+
+.bell svg { width: 15px; height: 15px; fill: var(--secondary); }
+
+body[data-state="running"] .bell,
+body[data-state="paused"] .bell { opacity: 1; }
+
+/* invisible input that summons the native numeric keyboard */
+.ghost-input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  border: 0;
+  background: transparent;
+  font-size: 16px; /* < 16px makes Safari zoom on focus */
+  color: transparent;
+  caret-color: transparent;
+}
+
+body[data-state="running"] .ghost-input,
+body[data-state="paused"] .ghost-input,
+body[data-state="done"] .ghost-input { display: none; }
+
+/* ---------- wheel ---------- */
+
+.wheel {
+  position: relative;
+  width: var(--dial);
+  height: var(--wheel-h);
+  flex: none;
+}
+
+body[data-state="running"] .wheel,
+body[data-state="paused"] .wheel,
+body[data-state="done"] .wheel,
+body[data-keypad="on"] .wheel { visibility: hidden; }
+
+.wheel-scroll {
+  height: 100%;
+  overflow-y: scroll;
+  scroll-snap-type: y mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -webkit-mask-image: linear-gradient(to bottom,
+      transparent 0%, #000 26%, #000 74%, transparent 100%);
+          mask-image: linear-gradient(to bottom,
+      transparent 0%, #000 26%, #000 74%, transparent 100%);
+}
+
+.wheel-scroll::-webkit-scrollbar { display: none; }
+
+.wheel-pad { height: calc((var(--wheel-h) - var(--row-h)) / 2); }
+
+.wheel-item {
+  height: var(--row-h);
+  line-height: var(--row-h);
+  scroll-snap-align: center;
+  text-align: center;
+  font-size: 23px;
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+  /* nudged left so numbers sit beside the "seconds" label, as on iOS */
+  padding-right: 5.5em;
+}
+
+.wheel-rules {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc((var(--wheel-h) - var(--row-h)) / 2);
+  height: var(--row-h);
+  border-top: 0.5px solid rgba(255, 255, 255, 0.18);
+  border-bottom: 0.5px solid rgba(255, 255, 255, 0.18);
+  pointer-events: none;
+}
+
+.wheel-label {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translateY(-50%);
+  margin-left: 0.9em;
+  font-size: 17px;
+  color: #fff;
+  pointer-events: none;
+}
+
+/* ---------- buttons ---------- */
+
+.buttons {
+  width: var(--dial);
+  display: flex;
+  justify-content: space-between;
+  flex: none;
+}
+
+.btn {
+  width: 80px;
+  height: 80px;
+  border: 0;
+  border-radius: 50%;
+  font-family: inherit;
+  font-size: 17px;
+  font-weight: 400;
+  transition: opacity .1s ease;
+}
+
+.btn:active { opacity: 0.4; }
+
+.btn-grey { background: var(--grey-fill); color: #fff; }
+
+.btn-orange {
+  background: rgba(255, 159, 10, 0.18);
+  color: var(--orange);
+}
+
+.btn.is-off { opacity: 0.32; pointer-events: none; }
