@@ -54,8 +54,13 @@ Big white `0` (tappable → keypad). Seconds wheel below it. Buttons:
 ### Running
 Wheel is hidden. The big number counts down in raw seconds. An orange ring
 around the number depletes counterclockwise from 12 o'clock. Beneath the
-number, a `🔔 3:45 PM` label in secondary grey showing the wall-clock finish
-time. Buttons: **Cancel** (grey) / **Pause** (orange).
+number, the same remaining time rendered as `m:ss` in secondary grey — so
+`100` above reads `1:40` below. It ticks with the main count.
+Buttons: **Cancel** (grey) / **Pause** (orange).
+
+This replaces the iOS bell-and-finish-time label, which carries little meaning
+over a short count. The raw seconds stay the primary readout; the `m:ss` line
+is only a conventional reading of the same number.
 
 ### Paused
 Everything freezes exactly as rendered, ring included.
@@ -78,7 +83,7 @@ not suggestions.
 | Orange | `#FF9F0A` — systemOrange **dark** variant, not the `#FF9500` light-mode one |
 | Ring track | `#333333`, stroke ≈ 7px, round line caps |
 | Ring progress | `#FF9F0A`, same stroke |
-| Bell label | `#8E8E93`, ~17px |
+| `m:ss` sub-label | `#8E8E93`, ~17px, `tabular-nums` |
 | Buttons | 80px circles. Cancel: `#333333` fill, white label. Start / Pause / Resume / Restart: orange at ~18% alpha fill, `#FF9F0A` label. |
 | Pressed state | Opacity ~0.4 on `:active` |
 | Page chrome | `viewport-fit=cover` with safe-area insets, `user-select: none`, no tap highlight, `overscroll-behavior: none` |
@@ -147,8 +152,8 @@ is manual, on a real iPhone in Safari:
 2. Tap the number → numeric keyboard appears, digits render live, 4-digit cap
    holds, layout does not shift.
 3. Typed value and wheel value stay in sync in both directions.
-4. Start → counts in raw seconds, ring depletes smoothly, bell label shows the
-   correct finish time.
+4. Start → counts in raw seconds, ring depletes smoothly, `m:ss` sub-label
+   tracks the main count.
 5. Values above 59 display as raw seconds (`100`, not `1:40`) throughout.
 6. Pause freezes number and ring; Resume continues from the same point.
 7. Lock the phone for ~30s mid-count, unlock: remaining time is correct.

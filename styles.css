@@ -94,21 +94,19 @@ body[data-state="done"] .ring { opacity: 1; }
   color: #fff;
 }
 
-.bell {
-  display: flex;
-  align-items: center;
-  gap: 5px;
+.subtime {
   color: var(--secondary);
   font-size: 17px;
   font-weight: 400;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
   opacity: 0;
   transition: opacity .2s ease;
 }
 
-.bell svg { width: 15px; height: 15px; fill: var(--secondary); }
-
-body[data-state="running"] .bell,
-body[data-state="paused"] .bell { opacity: 1; }
+body[data-state="running"] .subtime,
+body[data-state="paused"] .subtime,
+body[data-state="done"] .subtime { opacity: 1; }
 
 /* invisible input that summons the native numeric keyboard */
 .ghost-input {

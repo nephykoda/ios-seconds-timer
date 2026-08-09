@@ -9,7 +9,7 @@
   var els = {
     body: document.body,
     number: document.getElementById('number'),
-    endtime: document.getElementById('endtime'),
+    subtime: document.getElementById('subtime'),
     ghost: document.getElementById('ghost'),
     wheelScroll: document.getElementById('wheelScroll'),
     wheelItems: document.getElementById('wheelItems'),
@@ -108,20 +108,19 @@
   }
 
   function paint(remaining) {
-    els.number.textContent = String(Math.ceil(remaining / 1000));
+    var secs = Math.ceil(remaining / 1000);
+    els.number.textContent = String(secs);
+    els.subtime.textContent = formatMinSec(secs);
     var frac = totalMs > 0 ? remaining / totalMs : 0;
     els.progress.style.strokeDasharray = CIRC;
     els.progress.style.strokeDashoffset = CIRC * (1 - frac);
   }
 
-  function formatEndTime(ts) {
-    var d = new Date(ts);
-    var h = d.getHours();
-    var m = d.getMinutes();
-    var suffix = h >= 12 ? 'PM' : 'AM';
-    h = h % 12;
-    if (h === 0) h = 12;
-    return h + ':' + (m < 10 ? '0' + m : m) + ' ' + suffix;
+  // seconds -> m:ss, the conventional reading of the raw count above it
+  function formatMinSec(secs) {
+    var m = Math.floor(secs / 60);
+    var s = secs % 60;
+    return m + ':' + (s < 10 ? '0' + s : s);
   }
 
   /* ---------- wake lock ---------- */
@@ -225,10 +224,8 @@
 
     if (state === 'running') {
       els.right.textContent = 'Pause';
-      els.endtime.textContent = formatEndTime(endTimestamp);
     } else if (state === 'paused') {
       els.right.textContent = 'Resume';
-      els.endtime.textContent = formatEndTime(now() + pausedMs);
       paint(pausedMs);
     } else if (state === 'done') {
       els.right.textContent = 'Restart';
