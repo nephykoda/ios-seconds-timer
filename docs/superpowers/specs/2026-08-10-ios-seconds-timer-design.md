@@ -96,7 +96,7 @@ not suggestions.
 | Bell + `m:ss` sub-label | `#5A5A5E`, 16px, `tabular-nums`, sits **above** the number |
 | Buttons | 80px circles. Cancel: `#333333` fill, white label. Start / Resume / Restart: green at ~18% alpha fill, green label. Pause: orange at ~18% alpha, orange label. |
 | Pressed state | Opacity ~0.4 on `:active` |
-| Vertical rhythm | Stage gap `0` — the wheel's edge fade means neighbours can sit nearly flush. Buttons 8px under the wheel. Wheel takes `34px` top margin **while idle only**, giving the picker breathing room without moving the ring in the running state. Stage padded `60px` below the safe-area inset so the ring clears the nav bar by ~80px. |
+| Vertical rhythm | Stage gap `0` — the wheel's edge fade means neighbours can sit nearly flush. Buttons 8px under the wheel. Stage padded `84px` below the safe-area inset. Dial fixed at `214px`, giving ~32px between number and wheel and ~90px between nav bar and ring. |
 | Page chrome | `viewport-fit=cover` with safe-area insets, `user-select: none`, no tap highlight, `overscroll-behavior: none` |
 
 `tabular-nums` matters: without it the number jitters horizontally as digits
@@ -142,11 +142,25 @@ second.
 
 ### Dial sizing
 
-The dial is sized by the readout (sub-label + number), **not** by the ring. The
-ring is an absolutely-positioned overlay centred on the dial, so while idle —
-when it is invisible — it reserves no vertical space and the number can sit
-close to the wheel. Once running, the ring overflows the dial box symmetrically
-into the space the hidden wheel still occupies.
+**Nothing may move when the timer starts.** Every element keeps its exact
+position across all four states.
+
+That constrains the dial: its height is a fixed `214px` in every state, never
+derived from its contents nor from whether the ring is visible. The ring is an
+absolutely-positioned overlay centred on the dial and simply overflows it, top
+and bottom, into space that is reserved either way.
+
+`214px` is deliberately much smaller than the `306px` ring. A dial box the full
+size of the ring strands ~90px of dead space between the number and the wheel
+while idle; a box sized to its contents tightens that but makes the layout
+depend on the ring's visibility, which is exactly what causes a jump on Start.
+The fixed, smaller box gives ~32px between number and wheel and a stable
+layout.
+
+Dial height and stage top padding trade off directly: adding to the dial pushes
+the ring up toward the nav bar, adding to the padding pushes it back down by
+half as much. They are tuned together to hold the ring ~90px clear of the nav
+bar. Change one, re-check the other.
 
 ### State machine
 
@@ -179,8 +193,9 @@ is manual, on a real iPhone in Safari:
 3. Start button is green; Pause is orange; Resume and Restart are green.
 4. Start → counts in raw seconds, the ring's leading edge retreats
    anticlockwise, and the `m:ss` sub-label above tracks the main count.
-10. Nav title reads `100 secs` in every state, and the ring's position does not
-    shift between idle and running.
+10. Nav title reads `100 secs` in every state.
+11. **No element moves when Start is pressed.** Compare the number's and the
+    dial's bounding boxes before and after; they must be identical.
 5. Values above 59 display as raw seconds (`100`, not `1:40`) throughout.
 6. Pause freezes number and ring; Resume continues from the same point.
 7. Lock the phone for ~30s mid-count, unlock: remaining time is correct.

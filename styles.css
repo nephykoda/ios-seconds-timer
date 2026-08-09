@@ -81,20 +81,23 @@ body {
   gap: 0;
   /* clear the nav bar as well as the notch, so the ring is not crowded against
      the top of the screen */
-  padding: calc(env(safe-area-inset-top) + 60px) env(safe-area-inset-right)
+  padding: calc(env(safe-area-inset-top) + 84px) env(safe-area-inset-right)
            env(safe-area-inset-bottom) env(safe-area-inset-left);
 }
 
 /* ---------- dial: ring + number + bell ---------- */
 
-/* The dial is sized by the readout, not by the ring. The ring is an overlay
-   centred on it, so when it is invisible (idle) it reserves no vertical space
-   and the number can sit close to the wheel. */
+/* Fixed height in EVERY state, so nothing moves when the timer starts. It is
+   deliberately smaller than the ring — the ring is an overlay centred on it and
+   simply overflows — which keeps the number close to the wheel while idle
+   without the layout depending on whether the ring is visible. */
 .dial {
   position: relative;
   width: var(--dial);
+  height: 214px;
   flex: none;
   display: flex;
+  align-items: center;
   justify-content: center;
 }
 
@@ -180,10 +183,6 @@ body[data-state="done"] .subtime { opacity: 1; }
 body[data-state="running"] .wheel,
 body[data-state="paused"] .wheel,
 body[data-state="done"] .wheel { visibility: hidden; }
-
-/* Breathing room between the number and the wheel, applied only while idle so
-   the running layout — and the ring's centred position — is unaffected. */
-body[data-state="idle"] .wheel { margin-top: 34px; }
 
 .wheel-scroll {
   position: relative;
