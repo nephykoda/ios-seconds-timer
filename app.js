@@ -1,7 +1,11 @@
 (function () {
   'use strict';
 
-  var WHEEL_MAX = 600;    // the wheel is the only input, so this is the ceiling
+  var WHEEL_MAX = 100;    // the wheel is the only input, so this is the ceiling
+  // The ring is an absolute 0-100s gauge, not a percentage of the chosen
+  // duration: a 30s timer starts the ring 30% full and drains to empty, so the
+  // arc always means the same number of seconds whatever you picked.
+  var RING_FULL_MS = 100 * 1000;
   var ROW = 40;           // must match --row-h in styles.css
   var CIRC = 2 * Math.PI * 140;
 
@@ -103,7 +107,7 @@
     var secs = Math.ceil(remaining / 1000);
     els.number.textContent = String(secs);
     els.subtime.textContent = formatMinSec(secs);
-    var frac = totalMs > 0 ? remaining / totalMs : 0;
+    var frac = Math.min(remaining / RING_FULL_MS, 1);
     els.progress.style.strokeDasharray = CIRC;
     els.progress.style.strokeDashoffset = CIRC * (1 - frac);
   }

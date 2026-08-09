@@ -24,18 +24,19 @@ colors, ring, button treatment — copies the iOS dark timer exactly.
 
 The scroll wheel is the only way to set the duration.
 
-A vertical scroll column covering **0–600 seconds**, using CSS
+A vertical scroll column covering **0–100 seconds**, using CSS
 `scroll-snap-type: y mandatory` so it gets native iOS momentum and
 snap-to-value with no JS animation. The row in the centre sits on a rounded
 grey pill and is rendered white; every other row is secondary grey. A static
 `sec` label sits to the right of the column.
 
-**Cap.** 600 seconds (10 minutes) — the wheel's range is the ceiling. `0`
-leaves Start inert.
+**Cap.** 100 seconds. This is a 100-second timer by definition — the wheel's
+range, the ring's scale, and the product's purpose all agree on that number.
+`0` leaves Start inert.
 
-A numeric keypad was specified and built, then removed on request. If a value
-above 600 is ever needed, either extend the wheel or restore the keypad; the
-display itself handles up to 4 digits without resizing.
+A numeric keypad was specified and built, then removed on request. With a
+100-row wheel, scrolling to any value is quick enough that typing is not
+needed.
 
 ## Screens
 
@@ -46,7 +47,8 @@ Persistent across all states, copying the iOS Clock header: a decorative
 `‹ Timers` back button in orange on the left (non-interactive — there is
 nowhere to go back to) and a centred semibold title naming the timer by its
 duration, e.g. `100 secs`. The title tracks the wheel while idle and holds the
-running duration once started.
+running duration once started. The bar carries generous top padding (18px above
+the safe-area inset) so the title clears the notch comfortably.
 
 ### Idle
 Big white `0` above the seconds wheel. Buttons: **Cancel** (grey, inert until
@@ -121,6 +123,13 @@ clock, locking the phone mid-count and returning shows the correct remaining
 time rather than a stale one.
 
 ### Ring
+
+**The ring is an absolute 0–100 second gauge, not a progress bar.** Its fill is
+`remaining / 100s`, never `remaining / chosenDuration`. A 100s timer therefore
+starts on a full circle; a 30s timer starts 30% filled and drains from there;
+a 5s timer starts as a short stub near 12 o'clock. The arc always denotes the
+same number of seconds regardless of what was selected, so the ring is directly
+readable across runs.
 
 A single SVG circle with `stroke-dasharray` set to its circumference, animating
 `stroke-dashoffset` from the fractional progress. Rotated `-90deg` only — no
