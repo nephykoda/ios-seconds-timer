@@ -45,10 +45,11 @@ One screen, four states. Nothing navigates.
 ### Nav bar
 Persistent across all states, copying the iOS Clock header: a decorative
 `‹ Timers` back button in orange on the left (non-interactive — there is
-nowhere to go back to) and a centred semibold title naming the timer by its
-duration, e.g. `100 secs`. The title tracks the wheel while idle and holds the
-running duration once started. The bar carries generous top padding (18px above
-the safe-area inset) so the title clears the notch comfortably.
+nowhere to go back to) and a centred semibold title reading **`100 secs`**,
+permanently. The title names the app, not the current selection — this is the
+100-second timer whatever value is dialled in — so it is static markup with no
+JS behind it. The bar carries generous top padding (18px above the safe-area
+inset) so the title clears the notch comfortably.
 
 ### Idle
 Big white `0` above the seconds wheel. Buttons: **Cancel** (grey, inert until
@@ -95,7 +96,7 @@ not suggestions.
 | Bell + `m:ss` sub-label | `#5A5A5E`, 16px, `tabular-nums`, sits **above** the number |
 | Buttons | 80px circles. Cancel: `#333333` fill, white label. Start / Resume / Restart: green at ~18% alpha fill, green label. Pause: orange at ~18% alpha, orange label. |
 | Pressed state | Opacity ~0.4 on `:active` |
-| Vertical rhythm | Stage gap `0` — the wheel's edge fade means neighbours can sit nearly flush. Buttons 8px under the wheel. Stage padded `60px` below the safe-area inset so the ring clears the nav bar by ~80px. |
+| Vertical rhythm | Stage gap `0` — the wheel's edge fade means neighbours can sit nearly flush. Buttons 8px under the wheel. Wheel takes `34px` top margin **while idle only**, giving the picker breathing room without moving the ring in the running state. Stage padded `60px` below the safe-area inset so the ring clears the nav bar by ~80px. |
 | Page chrome | `viewport-fit=cover` with safe-area insets, `user-select: none`, no tap highlight, `overscroll-behavior: none` |
 
 `tabular-nums` matters: without it the number jitters horizontally as digits
@@ -178,7 +179,8 @@ is manual, on a real iPhone in Safari:
 3. Start button is green; Pause is orange; Resume and Restart are green.
 4. Start → counts in raw seconds, the ring's leading edge retreats
    anticlockwise, and the `m:ss` sub-label above tracks the main count.
-   Nav title reads `N secs` (`1 sec` singular).
+10. Nav title reads `100 secs` in every state, and the ring's position does not
+    shift between idle and running.
 5. Values above 59 display as raw seconds (`100`, not `1:40`) throughout.
 6. Pause freezes number and ring; Resume continues from the same point.
 7. Lock the phone for ~30s mid-count, unlock: remaining time is correct.

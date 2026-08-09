@@ -181,6 +181,10 @@ body[data-state="running"] .wheel,
 body[data-state="paused"] .wheel,
 body[data-state="done"] .wheel { visibility: hidden; }
 
+/* Breathing room between the number and the wheel, applied only while idle so
+   the running layout — and the ring's centred position — is unaffected. */
+body[data-state="idle"] .wheel { margin-top: 34px; }
+
 .wheel-scroll {
   position: relative;
   z-index: 1;
