@@ -158,11 +158,51 @@
 
   function paint(remaining) {
     var secs = Math.ceil(remaining / 1000);
-    els.number.textContent = String(secs);
+    setNumber(String(secs));
     els.subtime.textContent = formatMinSec(secs);
     var frac = Math.min(remaining / RING_FULL_MS, 1);
     els.progress.style.strokeDasharray = CIRC;
     els.progress.style.strokeDashoffset = CIRC * (1 - frac);
+  }
+
+  /* ---------- optical centring ----------
+     Centring the number's box is not the same as centring what you see. The
+     negative letter-spacing is applied after the final digit too, so the box
+     is narrower than the ink; and in tabular figures a "1" sits in a
+     full-width cell with a wide left sidebearing. "100" ends up ~6px right of
+     centre. Measure the real ink bounds and offset the element to compensate. */
+
+  var inkCtx = null;
+  var inkReady = false;
+  var inkCache = {};
+
+  function initInk() {
+    inkCtx = document.createElement('canvas').getContext('2d');
+    var cs = getComputedStyle(els.number);
+    inkCtx.font = cs.fontWeight + ' ' + cs.fontSize + ' ' + cs.fontFamily;
+    // without letterSpacing support the measurement would disagree with layout
+    if ('letterSpacing' in inkCtx) {
+      inkCtx.letterSpacing = cs.letterSpacing;
+      inkReady = true;
+    }
+  }
+
+  function centreNumber(text) {
+    if (inkCtx === null) initInk();
+    if (!inkReady) return;
+
+    var offset = inkCache[text];
+    if (offset === undefined) {
+      var m = inkCtx.measureText(text);
+      offset = (m.actualBoundingBoxRight - m.actualBoundingBoxLeft) / 2 - m.width / 2;
+      inkCache[text] = offset;
+    }
+    els.number.style.transform = 'translateX(' + (-offset).toFixed(2) + 'px)';
+  }
+
+  function setNumber(text) {
+    els.number.textContent = text;
+    centreNumber(text);
   }
 
   // seconds -> m:ss, the conventional reading of the raw count
@@ -265,7 +305,7 @@
     els.body.setAttribute('data-state', state);
 
     if (state === 'idle') {
-      els.number.textContent = String(value);
+      setNumber(String(value));
       els.subtime.textContent = formatMinSec(value);
       els.left.textContent = 'Cancel';
       setRight('Start', 'green');

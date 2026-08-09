@@ -200,6 +200,28 @@ Mechanics that matter:
   pass, so off-screen rows hold no stale state.
 - Transforms never affect layout, so this does not disturb the no-shift rule.
 
+### Optical centring of the number
+
+Centring the number's *box* does not centre what the eye sees. Two effects push
+the glyphs right of centre:
+
+- the negative `letter-spacing` is applied after the final digit as well, so
+  the laid-out box is narrower than the ink it contains;
+- in tabular figures a `1` occupies a full-width cell with a wide left
+  sidebearing, so any value containing a `1` carries dead space on its left.
+
+`centreNumber()` measures the real ink bounds with canvas `measureText()` —
+with `letterSpacing` set on the context so the measurement matches layout — and
+applies `translateX` to put the ink centre on the centre line. Offsets are
+cached per string, so the countdown measures each value at most once.
+
+Values are around 2px. Small, but on a 125px ultralight numeral against a
+symmetric ring it is visible.
+
+Feature detection: if the canvas context lacks `letterSpacing` (older Safari),
+the adjustment is skipped rather than applied from a measurement that would
+disagree with layout.
+
 ### State machine
 
 A single `state` variable (`idle | running | paused | done`) and one `render()`
