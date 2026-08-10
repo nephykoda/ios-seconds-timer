@@ -17,7 +17,7 @@ colors, ring, button treatment — copies the iOS dark timer exactly.
 
 - One timer. No multiple concurrent timers, no history, no presets, no labels.
 - No sound. No vibration. No notifications.
-- No persistence across page reloads.
+- No persistence across page reloads, except the custom title.
 - No build step, no dependencies, no framework.
 
 ## Input
@@ -47,10 +47,21 @@ One screen, four states. Nothing navigates.
 ### Nav bar
 Persistent across all states, copying the iOS Clock header: a decorative
 `‹ Timers` back button in orange on the left (non-interactive — there is
-nowhere to go back to) and a centred semibold title reading **`99s`**,
-permanently. The title names the app, not the current selection — this is the
-99-second timer whatever value is dialled in — so it is static markup with no
-JS behind it. The bar carries generous top padding (18px above the safe-area
+nowhere to go back to) and a centred semibold title, `99s` on first run.
+
+**The title is editable.** Tapping it focuses a `contenteditable` element and
+opens the keyboard, so the timer can be named for whatever it is being used for
+("Pasta", "Plank"). There is deliberately **no visual affordance** — no border,
+no placeholder, no pencil — it looks exactly like a static nav title.
+
+Rules: the name persists in `localStorage` under `ios99-timer.title` and is
+restored on load; Enter commits and dismisses the keyboard; on commit the value
+is collapsed to one line, trimmed, and capped at 24 characters; emptying it
+falls back to `99s` rather than leaving a blank bar. The title never reflects
+the selected duration.
+
+The nav bar as a whole stays `pointer-events: none` so the decorative back
+button remains inert; only the title opts back in. The bar carries generous top padding (18px above the safe-area
 inset) so the title clears the notch comfortably.
 
 ### Idle
@@ -263,10 +274,13 @@ is manual, on a real iPhone in Safari:
 9. Lock the phone for ~30s mid-count, unlock: remaining time is correct.
 10. Done → number at `0`, ring empty, silent; Restart reruns the same duration;
     Cancel returns to idle.
-11. Nav title reads `99s` in every state.
-12. **No element moves when Start is pressed.** Compare the number's and the
+11. Nav title reads `99s` on first run, never changes with the selected value,
+    and does not look editable.
+12. Tapping the title opens the keyboard; a new name survives a reload;
+    emptying it restores `99s`.
+13. **No element moves when Start is pressed.** Compare the number's and the
     dial's bounding boxes before and after; they must be identical.
-13. Wheel rows foreshorten toward the edges, and the drum stays smooth under a
+14. Wheel rows foreshorten toward the edges, and the drum stays smooth under a
     fast flick on a real device.
-14. Rendering check against a real iOS timer screenshot: colours, weights, and
+15. Rendering check against a real iOS timer screenshot: colours, weights, and
     button sizing match.

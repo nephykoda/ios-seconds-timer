@@ -132,6 +132,44 @@
     }
   }, { passive: true });
 
+  /* ---------- editable title ----------
+     Tapping the nav title opens the keyboard and lets it be renamed. There is
+     no affordance suggesting it is editable — that is intentional. The name
+     persists in localStorage, so it survives reloads but starts as "99s". */
+
+  var TITLE_KEY = 'ios99-timer.title';
+  var TITLE_DEFAULT = '99s';
+  var TITLE_MAX = 24;
+  var titleEl = document.getElementById('navTitle');
+
+  // plaintext-only is unsupported on older WebKit; fall back to plain editable
+  if (titleEl.contentEditable !== 'plaintext-only') {
+    titleEl.setAttribute('contenteditable', 'true');
+  }
+
+  try {
+    var savedTitle = localStorage.getItem(TITLE_KEY);
+    if (savedTitle) titleEl.textContent = savedTitle;
+  } catch (e) { /* private mode / storage disabled — keep the default */ }
+
+  titleEl.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') { e.preventDefault(); titleEl.blur(); }
+  });
+
+  // even under contenteditable=true, keep pasted content plain and one-line
+  titleEl.addEventListener('paste', function (e) {
+    e.preventDefault();
+    var text = (e.clipboardData || window.clipboardData).getData('text') || '';
+    document.execCommand('insertText', false, text.replace(/\s+/g, ' '));
+  });
+
+  titleEl.addEventListener('blur', function () {
+    var name = titleEl.textContent.replace(/\s+/g, ' ').trim().slice(0, TITLE_MAX);
+    if (!name) name = TITLE_DEFAULT;
+    titleEl.textContent = name;
+    try { localStorage.setItem(TITLE_KEY, name); } catch (e) { /* not fatal */ }
+  });
+
   /* ---------- timer engine ---------- */
 
   function now() { return Date.now(); }

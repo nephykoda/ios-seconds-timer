@@ -68,6 +68,17 @@ body {
   font-weight: 600;   /* iOS nav titles are semibold */
   letter-spacing: -0.02em;
   color: #fff;
+  /* editable, but deliberately gives no visual hint of it */
+  pointer-events: auto;
+  -webkit-user-select: text;
+  user-select: text;
+  outline: none;
+  caret-color: var(--orange);
+  white-space: nowrap;
+  max-width: 60vw;
+  overflow: hidden;
+  min-width: 1.5em;   /* stays tappable even when emptied */
+  text-align: center;
 }
 
 /* ---------- stage ---------- */
